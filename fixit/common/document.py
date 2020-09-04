@@ -11,14 +11,15 @@ from typing import Union
 
 import yaml
 
-from fixit.common.base import LintConfig, LintRuleT
-from fixit.common.config import get_rules_from_config
-from fixit.common.utils import (
+from fixit.common.base import (
     DEFAULT_CONFIG,
     DEFAULT_FILENAME,
     InvalidTestCase,
+    LintConfig,
+    LintRuleT,
     ValidTestCase,
 )
+from fixit.common.config import get_rules_from_config
 
 
 def _add_code_indent(code: str) -> str:

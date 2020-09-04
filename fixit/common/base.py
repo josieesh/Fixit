@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Type, Union
 
 import libcst as cst
 from libcst import BatchableCSTVisitor
+from libcst._add_slots import add_slots
 from libcst.metadata import (
     BaseMetadataProvider,
     CodePosition,
@@ -42,6 +43,10 @@ def _get_code(message: str, class_name: str) -> str:
     return code_match.group("code")
 
 
+def _str_or_any(value: Optional[int]) -> str:
+    return "<any>" if value is None else str(value)
+
+
 DEFAULT_PACKAGES = ["fixit.rules"]
 DEFAULT_PATTERNS = [f"@ge{''}nerated", "@nolint"]
 
@@ -55,6 +60,38 @@ class LintConfig:
     packages: List[str] = field(default_factory=lambda: DEFAULT_PACKAGES)
     repo_root: str = "."
     rule_config: Dict[str, Dict[str, object]] = field(default_factory=dict)
+
+
+DEFAULT_FILENAME: str = "not/a/real/file/path.py"
+DEFAULT_CONFIG: LintConfig = LintConfig(
+    repo_root=str(
+        Path(__file__).parent.parent
+    ),  # Set base config repo_root to `fixit` directory for testing.
+)
+
+
+@add_slots
+@dataclass(frozen=True)
+class ValidTestCase:
+    code: str
+    filename: str = DEFAULT_FILENAME
+    config: LintConfig = DEFAULT_CONFIG
+
+
+@add_slots
+@dataclass(frozen=True)
+class InvalidTestCase:
+    code: str
+    kind: Optional[str] = None
+    line: Optional[int] = None
+    column: Optional[int] = None
+    expected_replacement: Optional[str] = None
+    filename: str = DEFAULT_FILENAME
+    config: LintConfig = DEFAULT_CONFIG
+
+    @property
+    def expected_str(self) -> str:
+        return f"{_str_or_any(self.line)}:{_str_or_any(self.column)}: {self.kind} ..."
 
 
 class BaseContext:
@@ -102,6 +139,8 @@ class CstLintRule(BatchableCSTVisitor, metaclass=ABCMeta):
     MESSAGE: Optional[str] = None
 
     METADATA_DEPENDENCIES: Tuple[Type[BaseMetadataProvider], ...] = (PositionProvider,)
+    INVALID: List[InvalidTestCase] = []
+    VALID: List[ValidTestCase] = []
 
     def __init__(self, context: CstContext) -> None:
         super().__init__()

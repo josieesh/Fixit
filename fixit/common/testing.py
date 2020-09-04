@@ -10,16 +10,10 @@ from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Type, Union
 
 from libcst.metadata import MetadataWrapper
 
-from fixit.common.base import CstLintRule
+from fixit.common.base import CstLintRule, InvalidTestCase, ValidTestCase
 from fixit.common.generate_pyre_fixtures import get_fixture_path
 from fixit.common.report import BaseLintRuleReport
-from fixit.common.utils import (
-    InvalidTestCase,
-    LintRuleCollectionT,
-    ValidTestCase,
-    _dedent,
-    gen_type_inference_wrapper,
-)
+from fixit.common.utils import LintRuleCollectionT, _dedent, gen_type_inference_wrapper
 from fixit.rule_lint_engine import lint_file
 
 
